@@ -20,13 +20,13 @@ import ru.neoflex.VacationPayCalculator.util.ErrorResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
 @Validated
 public class VacationPayCalculatorController {
     private final VacationPayCalculatorService vacationPayCalculatorService;
+
     @Autowired
     public VacationPayCalculatorController(VacationPayCalculatorService vacationPayCalculatorService) {
         this.vacationPayCalculatorService = vacationPayCalculatorService;
@@ -35,30 +35,19 @@ public class VacationPayCalculatorController {
     @GetMapping("/calculate")
     public VacationPayDTO calculate(@RequestParam("average_salary")
                                     @Positive(message = "Введено отрицательное значение")
-                                    @Digits(integer = 10, fraction = 2, message = "Значение должно быть в формате 0.00")
-                                    BigDecimal averageSalary,
+                                    @Digits(integer = 10, fraction = 2, message = "Значение должно быть в формате 0.00") BigDecimal averageSalary,
                                     @RequestParam("vacation_days")
-                                    Optional<@Positive(message = "Введено отрицательное значение") Integer> vacationDays,
+                                    @Positive(message = "Введено отрицательное значение") Integer vacationDays,
                                     @RequestParam("start_of_vacation")
-                                    @DateTimeFormat(pattern = "dd-MM-yyyy")
-                                    Optional<LocalDate> startOfVacation,
-                                    @RequestParam("end_of_vacation")
-                                    @DateTimeFormat(pattern = "dd-MM-yyyy")
-                                    Optional<LocalDate> endOfVacation) {
-        if (startOfVacation.isPresent() && endOfVacation.isPresent())
-            return vacationPayCalculatorService.calculateVacationPayWithDates(averageSalary, startOfVacation.get(), endOfVacation.get());
-        return vacationPayCalculatorService.calculateVacationPayWithDays(averageSalary, vacationDays.get());
+                                    @DateTimeFormat(pattern = "dd-MM-yyyy") Optional<LocalDate> startOfVacation) {
+        if (startOfVacation.isPresent())
+            vacationDays = vacationPayCalculatorService.getVacationDaysFromStartDate(startOfVacation.get(), vacationDays);
+        return vacationPayCalculatorService.calculateVacationPay(averageSalary, vacationDays);
     }
 
-    //исключение будет выброшено, если не будет указана средняя зарплата
+    //исключение будет выброшено, если не будет указана средняя зарплата/количество дней отпуска
     @ExceptionHandler(MissingServletRequestParameterException.class)
     private ResponseEntity<ErrorResponse> handleException(MissingServletRequestParameterException e) {
-        return new ResponseEntity<>(new ErrorResponse("Недостаточно данных для расчета"), HttpStatus.BAD_REQUEST);
-    }
-
-    //исключение будет выброшено, если не будут указаны ни дни отпуска, ни даты
-    @ExceptionHandler(NoSuchElementException.class)
-    private ResponseEntity<ErrorResponse> handleException(NoSuchElementException e) {
         return new ResponseEntity<>(new ErrorResponse("Недостаточно данных для расчета"), HttpStatus.BAD_REQUEST);
     }
 

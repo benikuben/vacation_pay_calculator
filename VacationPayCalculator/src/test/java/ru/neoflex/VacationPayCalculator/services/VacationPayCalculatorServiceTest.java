@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class VacationPayCalculatorServiceTest {
     private static VacationPayCalculatorService vacationPayCalculatorService;
     private final BigDecimal testAverageSalary = BigDecimal.valueOf(100000);
+    private final Integer testVacationDays = 28;
 
     @BeforeAll
     public static void createNewVacationPayCalculatorService() {
@@ -20,17 +21,15 @@ class VacationPayCalculatorServiceTest {
     }
 
     @Test
-    void calculateVacationPayWithDaysTest() {
-        Integer testVacationDays = 28;
-        VacationPayDTO actual = vacationPayCalculatorService.calculateVacationPayWithDays(testAverageSalary, testVacationDays);
+    void calculateVacationPayTest() {
+        VacationPayDTO actual = vacationPayCalculatorService.calculateVacationPay(testAverageSalary, testVacationDays);
         assertEquals(new VacationPayDTO("Отпускные: ", BigDecimal.valueOf(95563.16)), actual);
     }
 
     @Test
-    void calculateVacationPayWithDatesTest() {
+    void getVacationDaysFromStartDateTest() {
         LocalDate testStartOfVacation = LocalDate.of(2023, Month.MAY, 1);
-        LocalDate testEndOfVacation = LocalDate.of(2023, Month.JUNE, 13);
-        VacationPayDTO actual = vacationPayCalculatorService.calculateVacationPayWithDates(testAverageSalary, testStartOfVacation, testEndOfVacation);
-        assertEquals(new VacationPayDTO("Отпускные: ", BigDecimal.valueOf(95563.16)), actual);
+        Integer actual = vacationPayCalculatorService.getVacationDaysFromStartDate(testStartOfVacation, testVacationDays);
+        assertEquals(17, actual);
     }
 }
