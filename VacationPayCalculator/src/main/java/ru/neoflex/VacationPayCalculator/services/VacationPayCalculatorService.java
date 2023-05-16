@@ -52,7 +52,6 @@ public class VacationPayCalculatorService {
                 filter(holiday -> !isWeekend(holiday) &&
                         !holiday.isAfter(endOfVacation) &&
                         !holiday.isBefore(startOfVacation)).count();
-        System.out.println(holidaysDuringVacation);
 
         return vacationDaysWithoutWeekends - holidaysDuringVacation;
     }
